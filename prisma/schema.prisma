@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ContactStatus {
+  added
+  contacted
+  interested
+  not_interested
+  in_progress
+  completed
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  name            String?
+  role            Role
+  passwordHash    String
+  createdAt       DateTime          @default(now())
+  sheets          Sheet[]           @relation("EmployeeSheets")
+  updatedContacts SheetContact[]    @relation("UpdatedContacts")
+  contactLogs     SheetContactLog[]
+}
+
+model Sheet {
+  id         String         @id @default(uuid())
+  employeeId String
+  week       String
+  uploadedAt DateTime       @default(now())
+  employee   User           @relation("EmployeeSheets", fields: [employeeId], references: [id], onDelete: Cascade)
+  contacts   SheetContact[]
+}
+
+model SheetContact {
+  id          String            @id @default(uuid())
+  sheetId     String
+  name        String
+  address     String?
+  category    String?
+  website     String?
+  phone       String?
+  contacted   Boolean           @default(false)
+  status      ContactStatus     @default(added)
+  comments    String?
+  tags        String[]          @default([])
+  updatedById String?
+  updatedAt   DateTime          @default(now())
+  sheet       Sheet             @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+  updatedBy   User?             @relation("UpdatedContacts", fields: [updatedById], references: [id])
+  logs        SheetContactLog[]
+
+  @@unique([sheetId, name, phone])
+}
+
+model SheetContactLog {
+  id             String       @id @default(uuid())
+  sheetContactId String
+  updatedById    String
+  action         String
+  oldValue       String?
+  newValue       String?
+  createdAt      DateTime     @default(now())
+  sheetContact   SheetContact @relation(fields: [sheetContactId], references: [id], onDelete: Cascade)
+  updatedBy      User         @relation(fields: [updatedById], references: [id])
+}
+
+enum Role {
+  ADMIN
+  SALES_EMPLOYEE
+}
