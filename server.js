@@ -4,11 +4,11 @@ const { loadEnv } = require("./config/env");
 const errorHandler = require("./middlewares/errorHandler.js");
 const { db } = require("./config/prisma.js");
 
-// const userRoutes = require("./routes/users");
-// const healthRoute = require("./routes/health");
-// const authRoutes = require("./routes/auth");
-// const sheetRoutes = require("./routes/sheets");
-// const sheetContactRoutes = require("./routes/sheet-contact");
+const userRoutes = require("./routes/users");
+const healthRoute = require("./routes/health");
+const authRoutes = require("./routes/auth");
+const sheetRoutes = require("./routes/sheets");
+const sheetContactRoutes = require("./routes/sheet-contact");
 
 const app = express();
 const PORT = loadEnv().BACKEND_PORT || 4000;
@@ -17,6 +17,15 @@ const PORT = loadEnv().BACKEND_PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
+// --- API routes ---
+
+app.use("/health", healthRoute);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/sheets", sheetRoutes);
+app.use("/sheet-contact", sheetContactRoutes);
+
+// --- Root route ---
 app.get("/", (req, res) => {
 	res.send("✅ Node.js Backend Running");
 });
