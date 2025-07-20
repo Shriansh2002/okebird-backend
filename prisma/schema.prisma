@@ -36,6 +36,8 @@ model Sheet {
   uploadedAt DateTime       @default(now())
   employee   User           @relation("EmployeeSheets", fields: [employeeId], references: [id], onDelete: Cascade)
   contacts   SheetContact[]
+  category   String         @default("CAFE")
+  city       String         @default("DELHI")
 }
 
 model SheetContact {
@@ -46,7 +48,6 @@ model SheetContact {
   category    String?
   website     String?
   phone       String?
-  contacted   Boolean           @default(false)
   status      ContactStatus     @default(added)
   comments    String?
   tags        String[]          @default([])

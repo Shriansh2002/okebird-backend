@@ -90,12 +90,31 @@ async function getMonthlyStats(employeeId) {
 		0
 	);
 
+	const monthlySheets = await db.sheet.findMany({
+		where: {
+			employeeId,
+			uploadedAt: {
+				gte: startOfMonth(now),
+				lte: endOfMonth(now),
+			},
+		},
+		include: {
+			contacts: true,
+		},
+	});
+
+	const totalAssignedContacts = monthlySheets.reduce(
+		(count, sheet) => count + sheet.contacts.length,
+		0
+	);
+
 	const rate = 12;
 	const totalCommission = (totalAmount * rate) / 100;
 
 	return {
 		converted_leads: convertedCount,
 		total_commission: totalCommission,
+		total_contacts_allocated: totalAssignedContacts,
 	};
 }
 
