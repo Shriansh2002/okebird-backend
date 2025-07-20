@@ -55,6 +55,7 @@ model SheetContact {
   sheet       Sheet             @relation(fields: [sheetId], references: [id], onDelete: Cascade)
   updatedBy   User?             @relation("UpdatedContacts", fields: [updatedById], references: [id])
   logs        SheetContactLog[]
+  totalAmount Int?
 
   @@unique([sheetId, name, phone])
 }

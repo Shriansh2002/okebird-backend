@@ -1,3 +1,4 @@
+const { startOfMonth, endOfMonth } = require("date-fns");
 const { db } = require("../config/prisma");
 const { mapContactInput } = require("../utils/sheet");
 
@@ -65,9 +66,43 @@ async function getSheetsForEmployee(employeeId) {
 	});
 }
 
+async function getMonthlyStats(employeeId) {
+	const now = new Date();
+
+	const logs = await db.sheetContactLog.findMany({
+		where: {
+			action: "status",
+			newValue: "completed",
+			createdAt: {
+				gte: startOfMonth(now),
+				lte: endOfMonth(now),
+			},
+			updatedById: employeeId,
+		},
+		include: {
+			sheetContact: true,
+		},
+	});
+
+	const convertedCount = logs.length;
+	const totalAmount = logs.reduce(
+		(sum, log) => sum + (log.sheetContact.totalAmount ?? 0),
+		0
+	);
+
+	const rate = 12;
+	const totalCommission = (totalAmount * rate) / 100;
+
+	return {
+		converted_leads: convertedCount,
+		total_commission: totalCommission,
+	};
+}
+
 module.exports = {
 	createSheet,
 	getSheetById,
 	getAllSheets,
 	getSheetsForEmployee,
+	getMonthlyStats,
 };

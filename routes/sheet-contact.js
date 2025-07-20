@@ -15,12 +15,10 @@ router.patch(
 	requireEmployee,
 	asyncHandler(async (req, res) => {
 		const contactId = req.params.id;
-
 		const body = req.body;
-		if (!body) {
-			return res.status(400).json({ error: "Missing request body" });
+		if (!req.body.status) {
+			return res.status(400).json({ error: "Status is required" });
 		}
-
 		const { status } = body;
 		const userId = req.user.id;
 
@@ -32,40 +30,37 @@ router.patch(
 			return res.status(400).json({ error: "Invalid status value" });
 		}
 
-		try {
-			const updatedContact = await db.$transaction(async (prisma) => {
-				const existingContact = await prisma.sheetContact.findUniqueOrThrow({
-					where: { id: contactId },
-					select: { status: true },
-				});
+		const contact = await db.sheetContact.findUnique({
+			where: { id: contactId },
+		});
 
-				return prisma.sheetContact.update({
-					where: { id: contactId },
-					data: {
-						status,
-						updatedById: userId,
-						updatedAt: new Date(),
-						logs: {
-							create: {
-								updatedById: userId,
-								action: `status changed`,
-								oldValue: existingContact.status,
-								newValue: status,
-							},
-						},
-					},
-				});
-			});
-
-			res.json({ success: true, contact: updatedContact });
-		} catch (error) {
-			// This will now catch "findUniqueOrThrow" errors too
-			if (error.code === "P2025") {
-				return res.status(404).json({ error: "Contact not found" });
-			}
-			console.error("Failed to update contact status:", error);
-			res.status(500).json({ error: "Internal Server Error" });
+		if (!contact) {
+			return res.status(404).json({ error: "Contact not found" });
 		}
+
+		const oldStatus = contact.status;
+
+		const updatedContact = await db.sheetContact.update({
+			where: { id: contactId },
+			data: {
+				status,
+				updatedById: userId,
+				updatedAt: new Date(),
+			},
+		});
+
+		// Create log entry
+		await db.sheetContactLog.create({
+			data: {
+				sheetContactId: contactId,
+				updatedById: userId,
+				action: "status",
+				oldValue: oldStatus,
+				newValue: status,
+			},
+		});
+
+		return res.json(updatedContact);
 	})
 );
 

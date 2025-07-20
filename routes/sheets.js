@@ -36,6 +36,16 @@ router.post(
 	})
 );
 
+router.get(
+	"/stats/current-month",
+	auth,
+	requireEmployee,
+	asyncHandler(async (req, res) => {
+		const stats = await sheetsService.getMonthlyStats(req.user.id);
+		res.json(stats);
+	})
+);
+
 // GET /sheets/mine - Employee gets their own sheets
 router.get(
 	"/mine",
