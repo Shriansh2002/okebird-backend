@@ -14,6 +14,7 @@ async function loginUser({ email, password }) {
 		id: user.id,
 		role: user.role,
 		email: user.email,
+		userName: user.name,
 	});
 
 	return {
@@ -23,6 +24,7 @@ async function loginUser({ email, password }) {
 			email: user.email,
 			name: user.name,
 			role: user.role,
+			userName: user.name,
 		},
 	};
 }
