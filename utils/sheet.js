@@ -20,6 +20,7 @@ function mapContactInput(contact) {
 		category: contact.category || null,
 		website: contact.website || null,
 		phone: contact.phone,
+		tags: contact.tags || [],
 	};
 }
 
