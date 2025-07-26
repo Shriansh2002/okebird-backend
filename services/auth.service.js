@@ -6,7 +6,7 @@ const { db } = require("../config/prisma");
 async function loginUser({ email, password }) {
 	const user = await db.user.findUnique({ where: { email } });
 
-	if (!user || password !== user.passwordHash) {
+	if (!user || password !== user.passwordHash || !user.active) {
 		throw new Error("Invalid email or password");
 	}
 

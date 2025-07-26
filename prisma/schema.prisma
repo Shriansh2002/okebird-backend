@@ -27,6 +27,7 @@ model User {
   sheets          Sheet[]           @relation("EmployeeSheets")
   updatedContacts SheetContact[]    @relation("UpdatedContacts")
   contactLogs     SheetContactLog[]
+  active          Boolean           @default(true)
 }
 
 model Sheet {
